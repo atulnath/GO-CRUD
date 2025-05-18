@@ -1,0 +1,33 @@
+services:
+  go-app:
+    container_name: go-app
+    image: atul/go-app:latest
+    build: .
+    environment:
+      - DATABASE_URL=host=go_db user=postgres password=postgres dbname=postgres sslmode=disable
+    ports:
+      - "8080:8080"
+    depends_on:
+      - go_db
+    restart: unless-stopped
+
+  go_db:
+    image: postgres:12
+    container_name: go_db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata: {}
